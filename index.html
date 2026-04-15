@@ -823,7 +823,7 @@
   </div>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.6.0/dist/xlsx.bundle.js"></script>
 <script>
   // ====================================================================
   // 🔗 URL API (Google Apps Script /exec) - ĐÃ DÁN SẴN URL CỦA BẠN
@@ -1599,156 +1599,142 @@
     });
   }
 
-  // --- Tab 3: Nhập dữ liệu Excel/CSV ---
+  // --- Tab 3: Nhập dữ liệu Excel ---
   let _pendingGV = null, _pendingHS = null;
 
-  // ===== TẢI MẪU EXCEL (kèm dữ liệu hiện có) =====
+  // ===== STYLE CONSTANTS (khớp pixel-perfect mẫu Excel gốc) =====
+  const _S = {
+    title: {font:{name:'Arial',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1E6B54'}},alignment:{horizontal:'center',vertical:'center',wrapText:true}},
+    sub:   {font:{name:'Arial',sz:10,italic:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'3FB28C'}},alignment:{horizontal:'center',vertical:'center',wrapText:true}},
+    hdr:   {font:{name:'Arial',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'2D8A6E'}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:{left:{style:'thin',color:{rgb:'1E6B54'}},right:{style:'thin',color:{rgb:'1E6B54'}},top:{style:'thin',color:{rgb:'1E6B54'}},bottom:{style:'medium',color:{rgb:'1E6B54'}}}},
+    note:  {font:{name:'Arial',sz:9,italic:true,color:{rgb:'6B7A72'}},alignment:{horizontal:'left',vertical:'center',wrapText:true}},
+    dc: function(a){var b={left:{style:'thin',color:{rgb:'B8D4C8'}},right:{style:'thin',color:{rgb:'B8D4C8'}},top:{style:'thin',color:{rgb:'B8D4C8'}},bottom:{style:'thin',color:{rgb:'B8D4C8'}}};var s={font:{name:'Arial',sz:10,color:{rgb:'142A23'}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:b};if(a)s.fill={fgColor:{rgb:'F7FBF8'}};return s;},
+    dl: function(a){var b={left:{style:'thin',color:{rgb:'B8D4C8'}},right:{style:'thin',color:{rgb:'B8D4C8'}},top:{style:'thin',color:{rgb:'B8D4C8'}},bottom:{style:'thin',color:{rgb:'B8D4C8'}}};var s={font:{name:'Arial',sz:10,color:{rgb:'142A23'}},alignment:{horizontal:'left',vertical:'center',wrapText:true},border:b};if(a)s.fill={fgColor:{rgb:'F7FBF8'}};return s;}
+  };
+  function _xc(ws,r,c,v,s){ws[XLSX.utils.encode_cell({r:r,c:c})]={v:String(v==null?'':v),t:'s',s:s};}
+
   function admDownloadTemplate(type){
-    if(typeof XLSX === 'undefined'){
-      alert('Thư viện SheetJS chưa tải xong. Vui lòng thử lại.'); return;
-    }
-    const wb = XLSX.utils.book_new();
-    let ws, fileName;
+    if(typeof XLSX==='undefined'){alert('Thư viện XLSX chưa tải xong.');return;}
+    var wb=XLSX.utils.book_new(), ws={}, fileName, dataCount=0;
+    var cfg=STATS.config||{};
+    var sn=cfg.name||'Trường Mầm non Diễn Vạn';
+    var sa=(cfg.address||'Xã Đức Châu, tỉnh Nghệ An')+' · Năm học '+(cfg.schoolYear||'2025 – 2026');
 
-    if(type === 'gv'){
-      const headerGV = ['TT','Họ và tên','Ngày sinh','Chức vụ','Trình độ','SĐT','Gmail','Link hồ sơ'];
-      const rows = [headerGV];
-      // Đổ dữ liệu GV hiện có (nếu đã load từ API)
-      if(TEACHERS && TEACHERS.length){
-        TEACHERS.forEach((t, i) => {
-          rows.push([i+1, t.name||'', t.dob||'', t.role||'', t.degree||'', t.phone||'', t.email||'', t.link||'']);
-        });
-      } else {
-        // Tạo 20 dòng trống với STT
-        for(let i = 1; i <= 20; i++) rows.push([i,'','','','','','','']);
+    if(type==='gv'){
+      var hdrs=['TT','Họ và tên','Ngày sinh','Chức vụ','Trình độ','SĐT','Gmail','Link hồ sơ'];
+      var cw=[6,28,14,24,14,16,30,38], cc=[0,2,4,5], lc=7;
+      _xc(ws,0,0,'📋 DANH SÁCH CÁN BỘ, GIÁO VIÊN, NHÂN VIÊN — '+sn.toUpperCase(),_S.title);
+      for(var i=1;i<=lc;i++)_xc(ws,0,i,'',_S.title);
+      _xc(ws,1,0,sa,_S.sub);
+      for(var i=1;i<=lc;i++)_xc(ws,1,i,'',_S.sub);
+      hdrs.forEach(function(h,i){_xc(ws,2,i,h,_S.hdr);});
+      var drs=[];
+      if(TEACHERS&&TEACHERS.length){
+        TEACHERS.forEach(function(t,i){drs.push([i+1,t.name||'',t.dob||'',t.role||'',t.degree||'',t.phone||'',t.email||'',t.link||'']);});
+        dataCount=TEACHERS.length;
       }
-      ws = XLSX.utils.aoa_to_sheet(rows);
-      ws['!cols'] = [{wch:5},{wch:28},{wch:14},{wch:24},{wch:14},{wch:16},{wch:30},{wch:38}];
-      XLSX.utils.book_append_sheet(wb, ws, 'DSGV');
-      fileName = 'Mau_DSGV_MNDienVan.xlsx';
+      var tr=Math.max(drs.length,20);
+      for(var r=0;r<tr;r++){var alt=r%2===1;var row=drs[r]||[r+1,'','','','','','',''];
+        row.forEach(function(v,c){_xc(ws,r+3,c,v,cc.indexOf(c)>=0?_S.dc(alt):_S.dl(alt));});}
+      var nr=tr+4;
+      _xc(ws,nr,0,'💡 Nhập dữ liệu xong → Lưu file .xlsx → Kéo thả vào Admin để tải lên hệ thống.',_S.note);
+      _xc(ws,nr+1,0,'📌 Cột "Link hồ sơ": Dán link Google Drive thư mục hồ sơ cá nhân của từng CBGV.',_S.note);
+      ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:nr+1,c:lc}});
+      ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:lc}},{s:{r:1,c:0},e:{r:1,c:lc}},{s:{r:nr,c:0},e:{r:nr,c:lc}},{s:{r:nr+1,c:0},e:{r:nr+1,c:lc}}];
+      ws['!cols']=cw.map(function(w){return{wch:w};});
+      ws['!rows']=[{hpt:40},{hpt:26},{hpt:32}];for(var r=0;r<tr;r++)ws['!rows'].push({hpt:24});
+      XLSX.utils.book_append_sheet(wb,ws,'DSGV');
+      fileName='Mau_DSGV_MNDienVan.xlsx';
     } else {
-      const headerHS = ['STT','Mã lớp','Mã HS','Họ và tên','Ngày sinh','Giới tính','Dân tộc','Tôn giáo','Tỉnh/TP','','Xã/Phường','Tổ/Thôn/Xóm','Nơi sinh','SĐT phụ huynh','Họ tên cha','Năm sinh cha','Họ tên mẹ','Năm sinh mẹ'];
-      const rows = [headerHS];
-      // Đổ dữ liệu HS hiện có
-      if(CLASSES && CLASSES.length){
-        let stt = 0;
-        CLASSES.forEach(cls => {
-          cls.students.forEach(s => {
-            stt++;
-            rows.push([stt, s.classCode||'', s.studentCode||'', s.name||'', s.dob||'', s.gender||'', s.ethnic||'', s.religion||'', s.province||'', '', s.ward||'', s.hamlet||'', s.birthplace||'', s.phone||'', s.father||'', s.fatherYear||'', s.mother||'', s.motherYear||'']);
-          });
-        });
-      } else {
-        for(let i = 1; i <= 30; i++) rows.push([i,'','','','','','','','','','','','','','','','','']);
+      var hdrs=['STT','Mã lớp','Mã HS','Họ và tên','Ngày sinh','Giới tính','Dân tộc','Tôn giáo','Tỉnh/TP','(trống)','Xã/Phường','Tổ/Thôn/Xóm','Nơi sinh','SĐT phụ huynh','Họ tên cha','Năm sinh cha','Họ tên mẹ','Năm sinh mẹ'];
+      var cw=[6,17,14,38,13,10,13,13,14,12,16,22,24,16,22,13,22,13], cc=[0,4,5,6,7,9,15,17], lc=17;
+      _xc(ws,0,0,'📋 DANH SÁCH HỌC SINH — '+sn.toUpperCase(),_S.title);
+      for(var i=1;i<=lc;i++)_xc(ws,0,i,'',_S.title);
+      _xc(ws,1,0,sa,_S.sub);
+      for(var i=1;i<=lc;i++)_xc(ws,1,i,'',_S.sub);
+      hdrs.forEach(function(h,i){_xc(ws,2,i,h,_S.hdr);});
+      var drs=[];
+      if(CLASSES&&CLASSES.length){var stt=0;
+        CLASSES.forEach(function(cls){cls.students.forEach(function(s){stt++;
+          drs.push([stt,s.classCode||'',s.studentCode||'',s.name||'',s.dob||'',s.gender||'',s.ethnic||'',s.religion||'',s.province||'','',s.ward||'',s.hamlet||'',s.birthplace||'',s.phone||'',s.father||'',s.fatherYear||'',s.mother||'',s.motherYear||'']);});});
+        dataCount=stt;
       }
-      ws = XLSX.utils.aoa_to_sheet(rows);
-      ws['!cols'] = [{wch:5},{wch:22},{wch:14},{wch:24},{wch:13},{wch:10},{wch:10},{wch:10},{wch:14},{wch:4},{wch:16},{wch:22},{wch:24},{wch:16},{wch:22},{wch:13},{wch:22},{wch:13}];
-      XLSX.utils.book_append_sheet(wb, ws, 'DSHocSinh');
-      fileName = 'Mau_DSHocSinh_MNDienVan.xlsx';
+      var tr=Math.max(drs.length,30);
+      for(var r=0;r<tr;r++){var alt=r%2===1;var row=drs[r]||[r+1,'','','','','','','','','','','','','','','','',''];
+        row.forEach(function(v,c){_xc(ws,r+3,c,v,cc.indexOf(c)>=0?_S.dc(alt):_S.dl(alt));});}
+      var nr=tr+4;
+      _xc(ws,nr,0,'💡 Nhập dữ liệu xong → Lưu file .xlsx → Kéo thả vào Admin để tải lên hệ thống.',_S.note);
+      _xc(ws,nr+1,0,'📌 Cột "Mã lớp": VD: Lớp 25 - 36 tháng A, MG 3 tuổi A, MG 4 tuổi B, MG 5 tuổi A.',_S.note);
+      ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:nr+1,c:lc}});
+      ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:lc}},{s:{r:1,c:0},e:{r:1,c:lc}},{s:{r:nr,c:0},e:{r:nr,c:lc}},{s:{r:nr+1,c:0},e:{r:nr+1,c:lc}}];
+      ws['!cols']=cw.map(function(w){return{wch:w};});
+      ws['!rows']=[{hpt:40},{hpt:26},{hpt:38}];for(var r=0;r<tr;r++)ws['!rows'].push({hpt:22});
+      XLSX.utils.book_append_sheet(wb,ws,'DSHocSinh');
+      fileName='Mau_DSHocSinh_MNDienVan.xlsx';
     }
-
-    // Style header row (SheetJS: bold + fill)
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    for(let c = range.s.c; c <= range.e.c; c++){
-      const addr = XLSX.utils.encode_cell({r:0, c:c});
-      if(!ws[addr]) continue;
-      ws[addr].s = {
-        font: {bold:true, color:{rgb:'FFFFFF'}, name:'Arial', sz:10},
-        fill: {fgColor:{rgb:'2D8A6E'}},
-        alignment: {horizontal:'center', vertical:'center', wrapText:true},
-        border: {bottom:{style:'medium', color:{rgb:'1E6B54'}}}
-      };
-    }
-
-    XLSX.writeFile(wb, fileName, {bookSST:true});
-    const msg = document.getElementById('admImportMsg');
-    const count = type === 'gv' ? (TEACHERS||[]).length : (CLASSES||[]).reduce((s,c)=>s+c.students.length,0);
-    msg.textContent = '✅ Đã tải ' + fileName + (count ? ' (kèm ' + count + ' dòng dữ liệu hiện có)' : ' (mẫu trống)');
-    msg.className = 'adm-alert ok';
-    setTimeout(() => msg.className = 'adm-alert', 4000);
+    XLSX.writeFile(wb,fileName);
+    var msg=document.getElementById('admImportMsg');
+    msg.textContent='✅ Đã tải '+fileName+(dataCount?' (kèm '+dataCount+' dòng dữ liệu)':' (mẫu trống)');
+    msg.className='adm-alert ok';
+    setTimeout(function(){msg.className='adm-alert';},4000);
   }
 
   // ===== ĐỌC FILE EXCEL HOẶC CSV =====
   function admHandleFile(file, type){
     if(!file) return;
-    const ext = file.name.split('.').pop().toLowerCase();
-
-    if(ext === 'xlsx' || ext === 'xls'){
-      // Đọc file Excel bằng SheetJS
-      if(typeof XLSX === 'undefined'){
-        alert('Thư viện SheetJS chưa tải xong. Vui lòng thử lại.'); return;
-      }
-      const reader = new FileReader();
-      reader.onload = function(ev){
-        const data = new Uint8Array(ev.target.result);
-        const workbook = XLSX.read(data, {type:'array', cellDates:false, raw:false});
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
-        // Chuyển tất cả giá trị thành string
-        const strRows = rows.map(r => r.map(c => String(c == null ? '' : c).trim()));
-        if(type === 'gv') { _pendingGV = strRows; admPreviewUpload('previewGV', strRows, type); }
-        else { _pendingHS = strRows; admPreviewUpload('previewHS', strRows, type); }
+    var ext=file.name.split('.').pop().toLowerCase();
+    if(ext==='xlsx'||ext==='xls'){
+      if(typeof XLSX==='undefined'){alert('Thư viện XLSX chưa tải xong.');return;}
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        var data=new Uint8Array(ev.target.result);
+        var workbook=XLSX.read(data,{type:'array',cellDates:false,raw:false});
+        var sheet=workbook.Sheets[workbook.SheetNames[0]];
+        var rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false});
+        var strRows=rows.map(function(r){return r.map(function(c){return String(c==null?'':c).trim();});});
+        if(type==='gv'){_pendingGV=strRows;admPreviewUpload('previewGV',strRows,type);}
+        else{_pendingHS=strRows;admPreviewUpload('previewHS',strRows,type);}
       };
       reader.readAsArrayBuffer(file);
     } else {
-      // Fallback: đọc CSV
-      const reader = new FileReader();
-      reader.onload = function(ev){
-        const text = ev.target.result;
-        const rows = _parseCSV(text);
-        if(type === 'gv') { _pendingGV = rows; admPreviewUpload('previewGV', rows, type); }
-        else { _pendingHS = rows; admPreviewUpload('previewHS', rows, type); }
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        var rows=_parseCSV(ev.target.result);
+        if(type==='gv'){_pendingGV=rows;admPreviewUpload('previewGV',rows,type);}
+        else{_pendingHS=rows;admPreviewUpload('previewHS',rows,type);}
       };
-      reader.readAsText(file, 'UTF-8');
+      reader.readAsText(file,'UTF-8');
     }
   }
 
   function _parseCSV(text){
-    const lines = text.split(/\r?\n/).filter(l => l.trim());
-    return lines.map(line => {
-      const cols = [];
-      let cur = '', inQ = false;
-      for(let i = 0; i < line.length; i++){
-        const c = line[i];
-        if(c === '"'){ inQ = !inQ; }
-        else if(c === ',' && !inQ){ cols.push(cur.trim()); cur = ''; }
-        else { cur += c; }
-      }
-      cols.push(cur.trim());
-      return cols;
+    var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});
+    return lines.map(function(line){
+      var cols=[],cur='',inQ=false;
+      for(var i=0;i<line.length;i++){var c=line[i];if(c==='"')inQ=!inQ;else if(c===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=c;}
+      cols.push(cur.trim());return cols;
     });
   }
 
   function admPreviewUpload(containerId, rows, type){
-    const el = document.getElementById(containerId);
-    // Bỏ dòng header nếu có chữ "STT" hoặc "TT" hoặc "Họ"
-    let data = rows;
-    if(data.length && /^(stt|tt|họ|ho)/i.test(String(data[0][0]) + String(data[0][1]))) data = data.slice(1);
-    // Bỏ dòng trống (dòng mà tất cả cột đều rỗng)
-    data = data.filter(r => r.some(c => c && String(c).trim()));
-    if(!data.length){
-      el.innerHTML = '<div class="adm-alert err" style="display:block">❌ File rỗng hoặc không có dữ liệu.</div>';
-      return;
-    }
-    const maxShow = Math.min(data.length, 5);
-    let html = '<div class="adm-preview"><table><thead><tr>';
-    const headers = type === 'gv'
-      ? ['TT','Họ tên','Ngày sinh','Chức vụ','Trình độ','SĐT','Gmail','Link']
-      : ['STT','Mã lớp','Mã HS','Họ tên','Ngày sinh','GT','Dân tộc','Tôn giáo'];
-    headers.forEach(h => html += '<th>' + h + '</th>');
-    html += '</tr></thead><tbody>';
-    for(let i = 0; i < maxShow; i++){
-      html += '<tr>' + data[i].slice(0, headers.length).map(c => '<td>' + escapeHtml(c) + '</td>').join('') + '</tr>';
-    }
-    if(data.length > maxShow) html += '<tr><td colspan="' + headers.length + '" style="text-align:center;color:#8a9690">... và ' + (data.length - maxShow) + ' dòng nữa</td></tr>';
-    html += '</tbody></table></div>';
-    html += '<p style="font-size:.85rem;color:var(--g-deep);margin:8px 0"><b>' + data.length + '</b> dòng dữ liệu sẵn sàng.</p>';
-    html += '<button class="adm-btn adm-btn-primary" onclick="admDoImport(\'' + type + '\')">📤 Tải lên Google Sheet</button>';
-    el.innerHTML = html;
-    if(type === 'gv') _pendingGV = data;
-    else _pendingHS = data;
+    var el=document.getElementById(containerId), data=rows;
+    while(data.length&&/^(stt|tt|họ|ho|📋|danh\s*s|xã|trường|\(trống\))/i.test(String(data[0][0]||'')+String(data[0][1]||'')+String(data[0][3]||'')))data=data.slice(1);
+    data=data.filter(function(r){return r.some(function(c){return c&&String(c).trim();})&&!/^[💡📌]/.test(String(r[0]||''));});
+    if(!data.length){el.innerHTML='<div class="adm-alert err" style="display:block">❌ File rỗng hoặc không có dữ liệu.</div>';return;}
+    var maxShow=Math.min(data.length,5);
+    var html='<div class="adm-preview"><table><thead><tr>';
+    var headers=type==='gv'?['TT','Họ tên','Ngày sinh','Chức vụ','Trình độ','SĐT','Gmail','Link']:['STT','Mã lớp','Mã HS','Họ tên','Ngày sinh','GT','Dân tộc','Tôn giáo'];
+    headers.forEach(function(h){html+='<th>'+h+'</th>';});
+    html+='</tr></thead><tbody>';
+    for(var i=0;i<maxShow;i++){html+='<tr>'+data[i].slice(0,headers.length).map(function(c){return'<td>'+escapeHtml(c)+'</td>';}).join('')+'</tr>';}
+    if(data.length>maxShow)html+='<tr><td colspan="'+headers.length+'" style="text-align:center;color:#8a9690">... và '+(data.length-maxShow)+' dòng nữa</td></tr>';
+    html+='</tbody></table></div>';
+    html+='<p style="font-size:.85rem;color:var(--g-deep);margin:8px 0"><b>'+data.length+'</b> dòng dữ liệu sẵn sàng.</p>';
+    html+='<button class="adm-btn adm-btn-primary" onclick="admDoImport(\''+type+'\')">📤 Tải lên Google Sheet</button>';
+    el.innerHTML=html;
+    if(type==='gv')_pendingGV=data;else _pendingHS=data;
   }
+
 
   function admDoImport(type){
     const msg = document.getElementById('admImportMsg');
