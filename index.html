@@ -748,24 +748,30 @@
           <div id="admImportMsg" class="adm-alert"></div>
 
           <!-- Upload Giáo viên -->
-          <h4 style="font-family:'Fraunces',serif;color:var(--g-deep);margin-bottom:12px">👩‍🏫 Nhập danh sách Giáo viên</h4>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+            <h4 style="font-family:'Fraunces',serif;color:var(--g-deep);margin:0">👩‍🏫 Nhập danh sách Giáo viên</h4>
+            <button class="adm-btn adm-btn-outline" style="padding:8px 16px;font-size:.82rem" onclick="admDownloadTemplate('gv')">📥 Tải mẫu Excel GV</button>
+          </div>
           <div class="adm-upload-zone" id="uplGV" onclick="document.getElementById('fileGV').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault();this.classList.remove('dragover');admHandleFile(event.dataTransfer.files[0],'gv')">
             <span class="upl-icon">📂</span>
-            <strong>Kéo thả file CSV vào đây</strong>
+            <strong>Kéo thả file Excel (.xlsx) vào đây</strong>
             <span>hoặc nhấn để chọn file · Cột: TT, Họ tên, Ngày sinh, Chức vụ, Trình độ, SĐT, Gmail, Link</span>
-            <input type="file" id="fileGV" accept=".csv,.txt" onchange="admHandleFile(this.files[0],'gv')">
+            <input type="file" id="fileGV" accept=".xlsx,.xls,.csv,.txt" onchange="admHandleFile(this.files[0],'gv')">
           </div>
           <div id="previewGV"></div>
 
           <hr class="adm-divider">
 
           <!-- Upload Học sinh -->
-          <h4 style="font-family:'Fraunces',serif;color:var(--g-deep);margin-bottom:12px">👶 Nhập danh sách Học sinh</h4>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+            <h4 style="font-family:'Fraunces',serif;color:var(--g-deep);margin:0">👶 Nhập danh sách Học sinh</h4>
+            <button class="adm-btn adm-btn-outline" style="padding:8px 16px;font-size:.82rem" onclick="admDownloadTemplate('hs')">📥 Tải mẫu Excel HS</button>
+          </div>
           <div class="adm-upload-zone" id="uplHS" onclick="document.getElementById('fileHS').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault();this.classList.remove('dragover');admHandleFile(event.dataTransfer.files[0],'hs')">
             <span class="upl-icon">📂</span>
-            <strong>Kéo thả file CSV vào đây</strong>
+            <strong>Kéo thả file Excel (.xlsx) vào đây</strong>
             <span>hoặc nhấn để chọn file · Cột: STT, Mã lớp, Mã HS, Họ tên, Ngày sinh, Giới tính, Dân tộc, Tôn giáo, Tỉnh, (trống), Xã, Tổ/Xóm, Nơi sinh, SĐT, Cha, Năm cha, Mẹ, Năm mẹ</span>
-            <input type="file" id="fileHS" accept=".csv,.txt" onchange="admHandleFile(this.files[0],'hs')">
+            <input type="file" id="fileHS" accept=".xlsx,.xls,.csv,.txt" onchange="admHandleFile(this.files[0],'hs')">
           </div>
           <div id="previewHS"></div>
 
@@ -817,6 +823,7 @@
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
   // ====================================================================
   // 🔗 URL API (Google Apps Script /exec) - ĐÃ DÁN SẴN URL CỦA BẠN
@@ -1592,19 +1599,109 @@
     });
   }
 
-  // --- Tab 3: Nhập dữ liệu CSV ---
+  // --- Tab 3: Nhập dữ liệu Excel/CSV ---
   let _pendingGV = null, _pendingHS = null;
 
+  // ===== TẢI MẪU EXCEL (kèm dữ liệu hiện có) =====
+  function admDownloadTemplate(type){
+    if(typeof XLSX === 'undefined'){
+      alert('Thư viện SheetJS chưa tải xong. Vui lòng thử lại.'); return;
+    }
+    const wb = XLSX.utils.book_new();
+    let ws, fileName;
+
+    if(type === 'gv'){
+      const headerGV = ['TT','Họ và tên','Ngày sinh','Chức vụ','Trình độ','SĐT','Gmail','Link hồ sơ'];
+      const rows = [headerGV];
+      // Đổ dữ liệu GV hiện có (nếu đã load từ API)
+      if(TEACHERS && TEACHERS.length){
+        TEACHERS.forEach((t, i) => {
+          rows.push([i+1, t.name||'', t.dob||'', t.role||'', t.degree||'', t.phone||'', t.email||'', t.link||'']);
+        });
+      } else {
+        // Tạo 20 dòng trống với STT
+        for(let i = 1; i <= 20; i++) rows.push([i,'','','','','','','']);
+      }
+      ws = XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols'] = [{wch:5},{wch:28},{wch:14},{wch:24},{wch:14},{wch:16},{wch:30},{wch:38}];
+      XLSX.utils.book_append_sheet(wb, ws, 'DSGV');
+      fileName = 'Mau_DSGV_MNDienVan.xlsx';
+    } else {
+      const headerHS = ['STT','Mã lớp','Mã HS','Họ và tên','Ngày sinh','Giới tính','Dân tộc','Tôn giáo','Tỉnh/TP','','Xã/Phường','Tổ/Thôn/Xóm','Nơi sinh','SĐT phụ huynh','Họ tên cha','Năm sinh cha','Họ tên mẹ','Năm sinh mẹ'];
+      const rows = [headerHS];
+      // Đổ dữ liệu HS hiện có
+      if(CLASSES && CLASSES.length){
+        let stt = 0;
+        CLASSES.forEach(cls => {
+          cls.students.forEach(s => {
+            stt++;
+            rows.push([stt, s.classCode||'', s.studentCode||'', s.name||'', s.dob||'', s.gender||'', s.ethnic||'', s.religion||'', s.province||'', '', s.ward||'', s.hamlet||'', s.birthplace||'', s.phone||'', s.father||'', s.fatherYear||'', s.mother||'', s.motherYear||'']);
+          });
+        });
+      } else {
+        for(let i = 1; i <= 30; i++) rows.push([i,'','','','','','','','','','','','','','','','','']);
+      }
+      ws = XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols'] = [{wch:5},{wch:22},{wch:14},{wch:24},{wch:13},{wch:10},{wch:10},{wch:10},{wch:14},{wch:4},{wch:16},{wch:22},{wch:24},{wch:16},{wch:22},{wch:13},{wch:22},{wch:13}];
+      XLSX.utils.book_append_sheet(wb, ws, 'DSHocSinh');
+      fileName = 'Mau_DSHocSinh_MNDienVan.xlsx';
+    }
+
+    // Style header row (SheetJS: bold + fill)
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for(let c = range.s.c; c <= range.e.c; c++){
+      const addr = XLSX.utils.encode_cell({r:0, c:c});
+      if(!ws[addr]) continue;
+      ws[addr].s = {
+        font: {bold:true, color:{rgb:'FFFFFF'}, name:'Arial', sz:10},
+        fill: {fgColor:{rgb:'2D8A6E'}},
+        alignment: {horizontal:'center', vertical:'center', wrapText:true},
+        border: {bottom:{style:'medium', color:{rgb:'1E6B54'}}}
+      };
+    }
+
+    XLSX.writeFile(wb, fileName, {bookSST:true});
+    const msg = document.getElementById('admImportMsg');
+    const count = type === 'gv' ? (TEACHERS||[]).length : (CLASSES||[]).reduce((s,c)=>s+c.students.length,0);
+    msg.textContent = '✅ Đã tải ' + fileName + (count ? ' (kèm ' + count + ' dòng dữ liệu hiện có)' : ' (mẫu trống)');
+    msg.className = 'adm-alert ok';
+    setTimeout(() => msg.className = 'adm-alert', 4000);
+  }
+
+  // ===== ĐỌC FILE EXCEL HOẶC CSV =====
   function admHandleFile(file, type){
     if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev){
-      const text = ev.target.result;
-      const rows = _parseCSV(text);
-      if(type === 'gv') { _pendingGV = rows; admPreviewUpload('previewGV', rows, type); }
-      else { _pendingHS = rows; admPreviewUpload('previewHS', rows, type); }
-    };
-    reader.readAsText(file, 'UTF-8');
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    if(ext === 'xlsx' || ext === 'xls'){
+      // Đọc file Excel bằng SheetJS
+      if(typeof XLSX === 'undefined'){
+        alert('Thư viện SheetJS chưa tải xong. Vui lòng thử lại.'); return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        const data = new Uint8Array(ev.target.result);
+        const workbook = XLSX.read(data, {type:'array', cellDates:false, raw:false});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
+        // Chuyển tất cả giá trị thành string
+        const strRows = rows.map(r => r.map(c => String(c == null ? '' : c).trim()));
+        if(type === 'gv') { _pendingGV = strRows; admPreviewUpload('previewGV', strRows, type); }
+        else { _pendingHS = strRows; admPreviewUpload('previewHS', strRows, type); }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      // Fallback: đọc CSV
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        const text = ev.target.result;
+        const rows = _parseCSV(text);
+        if(type === 'gv') { _pendingGV = rows; admPreviewUpload('previewGV', rows, type); }
+        else { _pendingHS = rows; admPreviewUpload('previewHS', rows, type); }
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
   }
 
   function _parseCSV(text){
@@ -1627,7 +1724,9 @@
     const el = document.getElementById(containerId);
     // Bỏ dòng header nếu có chữ "STT" hoặc "TT" hoặc "Họ"
     let data = rows;
-    if(data.length && /^(stt|tt|họ|ho)/i.test(data[0][0] + data[0][1])) data = data.slice(1);
+    if(data.length && /^(stt|tt|họ|ho)/i.test(String(data[0][0]) + String(data[0][1]))) data = data.slice(1);
+    // Bỏ dòng trống (dòng mà tất cả cột đều rỗng)
+    data = data.filter(r => r.some(c => c && String(c).trim()));
     if(!data.length){
       el.innerHTML = '<div class="adm-alert err" style="display:block">❌ File rỗng hoặc không có dữ liệu.</div>';
       return;
