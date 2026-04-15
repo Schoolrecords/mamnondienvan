@@ -345,6 +345,21 @@
     .adm-link-card{padding:12px;gap:10px}
     .adm-link-icon{width:36px;height:36px;font-size:1rem}
   }
+  /* ===== GIỚI THIỆU ===== */
+  .about{padding:80px 6vw;background:linear-gradient(180deg,#eef4fb 0%,#f4f8fc 100%)}
+  .about-wrap{display:grid;grid-template-columns:1fr 1fr;gap:60px;max-width:1200px;margin:0 auto;align-items:center}
+  .about-img{border-radius:20px;overflow:hidden;box-shadow:0 20px 60px -16px rgba(30,60,120,.2)}
+  .about-img img{width:100%;height:auto;display:block;aspect-ratio:4/3;object-fit:cover}
+  .about-text .kicker{color:#5b6dcd;font-weight:600;text-transform:uppercase;font-size:.78rem;letter-spacing:.2em;display:inline-flex;align-items:center;gap:8px;background:#eef0ff;padding:6px 16px;border-radius:999px;margin-bottom:20px}
+  .about-text h2{font-family:'Fraunces',serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:600;color:#2a3070;line-height:1.2;margin-bottom:20px}
+  .about-text p{color:#5a6b74;font-size:.95rem;line-height:1.7;margin-bottom:14px}
+  .about-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+  .about-feat{display:flex;align-items:center;gap:10px;padding:12px 18px;background:white;border-radius:12px;border:1px solid #e8ecf4;font-size:.88rem;color:#2a3070;font-weight:500;transition:all .2s}
+  .about-feat:hover{border-color:#5b6dcd;box-shadow:0 4px 12px rgba(91,109,205,.12)}
+  .about-feat::before{content:'✅';font-size:.9rem;flex-shrink:0}
+  @media(max-width:900px){.about-wrap{grid-template-columns:1fr;gap:30px}.about-img{max-width:560px}}
+  @media(max-width:480px){.about-features{grid-template-columns:1fr}.about{padding:50px 5vw}}
+
   /* ===== ADMIN PANEL ===== */
   .admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;backdrop-filter:blur(4px)}
   .admin-overlay.open{display:flex;align-items:center;justify-content:center}
@@ -426,9 +441,10 @@
   <div class="logo"><div class="logo-mark">🌱</div><span>MN Diễn Vạn</span></div>
   <ul class="nav-links">
     <li><a href="#home">Trang chủ</a></li>
+    <li><a href="#about">Giới thiệu</a></li>
     <li><a href="#records">Hồ sơ số</a></li>
     <li><a href="#classes">Quản lý trẻ</a></li>
-    <li><a href="#teachers">Năng lực GV</a></li>
+    <li><a href="#teachers">Hồ sơ CBGVNV</a></li>
     <li><a href="#guide">Hướng dẫn</a></li>
   </ul>
   <button class="nav-cta" onclick="openAdmin()">⚙ Admin</button>
@@ -438,9 +454,10 @@
 <aside class="mobile-menu" id="mobileMenu">
   <button class="mobile-close" onclick="toggleMenu()">✕</button>
   <a href="#home" onclick="toggleMenu()">Trang chủ</a>
+  <a href="#about" onclick="toggleMenu()">Giới thiệu</a>
   <a href="#records" onclick="toggleMenu()">Hồ sơ số</a>
   <a href="#classes" onclick="toggleMenu()">Quản lý trẻ</a>
-  <a href="#teachers" onclick="toggleMenu()">Năng lực GV</a>
+  <a href="#teachers" onclick="toggleMenu()">Hồ sơ CBGVNV</a>
   <a href="#guide" onclick="toggleMenu()">Hướng dẫn</a>
   <a href="#contact" onclick="toggleMenu()">Liên hệ</a>
   <button class="nav-cta" style="width:100%;margin-top:18px;font-size:.95rem;padding:14px" onclick="toggleMenu();openAdmin()">⚙ Admin</button>
@@ -468,6 +485,28 @@
   <div class="stat-item"><span class="stat-num" id="stClasses">–</span><span class="stat-label">Lớp học</span></div>
   <div class="stat-item"><span class="stat-num" id="stChildren">–</span><span class="stat-label">Trẻ em</span></div>
 </div>
+
+<section class="about" id="about">
+  <div class="about-wrap">
+    <div class="about-img">
+      <img id="aboutImg" src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&q=80" alt="Trường Mầm non Diễn Vạn">
+    </div>
+    <div class="about-text">
+      <span class="kicker">❤ Giới thiệu</span>
+      <h2>Nơi trẻ em được yêu thương và phát triển toàn diện</h2>
+      <p id="aboutDesc1">Trường Mầm non Diễn Vạn tọa lạc tại Xã Đức Châu, tỉnh Nghệ An. Trường luôn nỗ lực xây dựng môi trường giáo dục an toàn, thân thiện.</p>
+      <p id="aboutDesc2">Với đội ngũ CB,GV,NV tận tâm, nhà trường cam kết mang đến chương trình giáo dục chất lượng cao.</p>
+      <div class="about-features">
+        <div class="about-feat">Giáo dục toàn diện</div>
+        <div class="about-feat">Môi trường an toàn</div>
+        <div class="about-feat">Bán trú chất lượng</div>
+        <div class="about-feat">Đội ngũ tận tâm</div>
+        <div class="about-feat">Phổ cập GDMN</div>
+        <div class="about-feat">Trường học an toàn</div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section class="records" id="records">
   <div class="records-head">
@@ -509,7 +548,7 @@
 
 <section class="teachers" id="teachers">
   <div class="teachers-head">
-    <span class="kicker">Năng lực giáo viên</span>
+    <span class="kicker">Hồ sơ CBGVNV</span>
     <h2>Hồ sơ CBGV – NV</h2>
     <p>Đội ngũ cán bộ, giáo viên, nhân viên tận tâm của nhà trường. Click vào mỗi thẻ để mở hồ sơ cá nhân.</p>
   </div>
@@ -536,11 +575,11 @@
         <div class="step-card full">
           <div class="step-illust">
             <span class="step-num">1</span>
-            <svg viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="540" height="40" rx="10" fill="#1e6b54"/><circle cx="30" cy="30" r="12" fill="#fdfbf4"/><text x="30" y="34" font-size="10" text-anchor="middle">🌱</text><text x="140" y="34" font-size="9" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="sans-serif">Trang chủ</text><rect x="170" y="24" width="1" height="12" fill="rgba(255,255,255,.2)"/><text x="210" y="34" font-size="9" fill="#ffd66b" text-anchor="middle" font-family="sans-serif" font-weight="bold">Hồ sơ số</text><rect x="245" y="24" width="1" height="12" fill="rgba(255,255,255,.2)"/><text x="290" y="34" font-size="9" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="sans-serif">Quản lý trẻ</text><rect x="330" y="24" width="1" height="12" fill="rgba(255,255,255,.2)"/><text x="380" y="34" font-size="9" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="sans-serif">Năng lực GV</text><rect x="420" y="24" width="1" height="12" fill="rgba(255,255,255,.2)"/><text x="468" y="34" font-size="9" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="sans-serif">Hướng dẫn</text><text x="280" y="80" font-size="11" fill="#2d8a6e" text-anchor="middle" font-family="sans-serif" font-weight="bold">👆 Nhấn vào tên mục trên thanh menu để chuyển đến phần tương ứng</text><text x="280" y="100" font-size="9" fill="#6b7a72" text-anchor="middle" font-family="sans-serif">Trên điện thoại: nhấn nút ☰ góc phải → chọn mục</text></svg>
+            <svg viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="540" height="40" rx="10" fill="#1e6b54"/><circle cx="30" cy="30" r="12" fill="#fdfbf4"/><text x="30" y="34" font-size="10" text-anchor="middle">🌱</text><text x="140" y="34" font-size="9" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="sans-serif">Trang chủ</text><rect x="170" y="24" width="1" height="12" fill="rgba(255,255,255,.2)"/><text x="210" y="34" font-size="9" fill="#ffd66b" text-anchor="middle" font-family="sans-serif" font-weight="bold">Hồ sơ số</text><rect x="245" y="24" width="1" height="12" fill="rgba(255,255,255,.2)"/><text x="290" y="34" font-size="9" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="sans-serif">Quản lý trẻ</text><rect x="330" y="24" width="1" height="12" fill="rgba(255,255,255,.2)"/><text x="380" y="34" font-size="9" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="sans-serif">Hồ sơ CBGVNV</text><rect x="420" y="24" width="1" height="12" fill="rgba(255,255,255,.2)"/><text x="468" y="34" font-size="9" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="sans-serif">Hướng dẫn</text><text x="280" y="80" font-size="11" fill="#2d8a6e" text-anchor="middle" font-family="sans-serif" font-weight="bold">👆 Nhấn vào tên mục trên thanh menu để chuyển đến phần tương ứng</text><text x="280" y="100" font-size="9" fill="#6b7a72" text-anchor="middle" font-family="sans-serif">Trên điện thoại: nhấn nút ☰ góc phải → chọn mục</text></svg>
           </div>
           <div class="step-body">
             <h4>Chọn mục cần xem trên thanh menu</h4>
-            <p>Nhấn vào tên mục trên thanh menu phía trên: <b>Hồ sơ số</b>, <b>Quản lý trẻ</b>, <b>Năng lực GV</b>, <b>Hướng dẫn</b>. Trang sẽ tự cuộn đến phần tương ứng. Trên điện thoại, nhấn nút <b>☰</b> ở góc phải để mở menu.</p>
+            <p>Nhấn vào tên mục trên thanh menu phía trên: <b>Hồ sơ số</b>, <b>Quản lý trẻ</b>, <b>Hồ sơ CBGVNV</b>, <b>Hướng dẫn</b>. Trang sẽ tự cuộn đến phần tương ứng. Trên điện thoại, nhấn nút <b>☰</b> ở góc phải để mở menu.</p>
           </div>
         </div>
 
@@ -589,7 +628,7 @@
           </div>
           <div class="step-body">
             <h4>Xem & đưa Hồ sơ năng lực GV</h4>
-            <p>Cuộn đến mục <b>"Năng lực GV"</b> → Lọc theo nhóm (Ban giám hiệu / Giáo viên / Nhân viên) → Nhấn <b>"📂 Hồ sơ cá nhân"</b> → Google Drive mở ra → Nhấn <b>"+ Tải tệp lên"</b> để đưa hồ sơ giáo viên lên. Cách làm giống hệt mục Hồ sơ số.</p>
+            <p>Cuộn đến mục <b>"Hồ sơ CBGVNV"</b> → Lọc theo nhóm (Ban giám hiệu / Giáo viên / Nhân viên) → Nhấn <b>"📂 Hồ sơ cá nhân"</b> → Google Drive mở ra → Nhấn <b>"+ Tải tệp lên"</b> để đưa hồ sơ giáo viên lên. Cách làm giống hệt mục Hồ sơ số.</p>
           </div>
         </div>
 
@@ -813,7 +852,7 @@
       <div class="logo" style="color:white"><div class="logo-mark">🌱</div><span>MN Diễn Vạn</span></div>
       <p>Hồ sơ số chính thức của Trường Mầm non Diễn Vạn – xã Đức Châu, tỉnh Nghệ An.</p>
     </div>
-    <div><h5>Liên kết</h5><a href="#home">Trang chủ</a><a href="#records">Hồ sơ số</a><a href="#classes">Quản lý trẻ</a><a href="#teachers">Năng lực GV</a></div>
+    <div><h5>Liên kết</h5><a href="#home">Trang chủ</a><a href="#records">Hồ sơ số</a><a href="#classes">Quản lý trẻ</a><a href="#teachers">Hồ sơ CBGVNV</a></div>
     <div><h5>Phụ huynh</h5><a href="#">Sổ liên lạc</a><a href="#">Thực đơn</a><a href="#">Lịch hoạt động</a><a href="#">Học phí</a></div>
     <div><h5>Kết nối</h5><a href="#">Facebook</a><a href="#">Zalo OA</a><a href="#">YouTube</a><a href="#">Hotline</a></div>
   </div>
@@ -1195,6 +1234,25 @@
     <div class="faq-a"><div class="faq-a-inner">${f.a}</div></div>
   </div>`).join('');
 
+  // ============ GIỚI THIỆU ============
+  function renderAbout(){
+    // Ảnh: lấy ảnh loại 'truong' đầu tiên, hoặc ảnh đầu tiên bất kỳ
+    if(IMAGES && IMAGES.length){
+      var img = IMAGES.find(function(i){return i.type==='truong';}) || IMAGES[0];
+      if(img && img.url){
+        document.getElementById('aboutImg').src = img.url;
+        document.getElementById('aboutImg').alt = img.title || 'Trường Mầm non Diễn Vạn';
+      }
+    }
+    // Cập nhật mô tả với thông tin thật
+    var cfg = STATS.config || {};
+    var name = cfg.name || 'Trường Mầm non Diễn Vạn';
+    var addr = cfg.address || 'Xã Đức Châu, tỉnh Nghệ An';
+    var tcCount = STATS.totalTeachers || 0;
+    document.getElementById('aboutDesc1').textContent = name + ' tọa lạc tại ' + addr + '. Trường luôn nỗ lực xây dựng môi trường giáo dục an toàn, thân thiện.';
+    if(tcCount) document.getElementById('aboutDesc2').textContent = 'Với đội ngũ ' + tcCount + ' CB,GV,NV tận tâm, nhà trường cam kết mang đến chương trình giáo dục chất lượng cao.';
+  }
+
   // ============ HERO CAROUSEL (ảnh từ Sheet "Hinh Anh") ============
   const TYPE_LABELS = {truong:'Toàn cảnh',hoatdong:'Hoạt động',banru:'Bán trú',lehoi:'Lễ hội'};
 
@@ -1237,6 +1295,7 @@
     IMAGES = data.images || [];
     STATS = data.stats || {};
     renderCarousel();
+    renderAbout();
     renderStats();
     admApplyConfig();
     renderCategories();
